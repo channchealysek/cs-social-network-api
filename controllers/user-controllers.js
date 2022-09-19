@@ -15,6 +15,7 @@ const userController = {
       return res.status(500).json(err);
     }
   },
+
   // get one user by ID
   async getUserById({ params }, res) {
     try {
@@ -36,6 +37,7 @@ const userController = {
       return res.status(400).json(err);
     }
   },
+
   // add a new user
   async createUser({ body }, res) {
     try {
@@ -48,29 +50,34 @@ const userController = {
       return res.status(400).json(err);
     }
   },
+
   // update user info
   async updateUser({ params, body }, res) {
     try {
-      const dataUser = User.findByIdAndUpdate({ _id: params.id }, body, {
+      User.findOneAndUpdate({ _id: params.id }, body, {
         new: true,
         runValidators: true,
-      });
-      return dataUser
-        ? res.status(200).json(dataUser)
-        : res.status(404).json({ message: user404Message(params.id) });
+      })
+        .then((dataUser) =>
+          dataUser
+            ? res.json(dataUser)
+            : res.status(404).json({ message: user404Message(params.id) })
+        )
+        .catch((err) => res.status(400).json(err));
     } catch (err) {
       return res.status(400).json(err);
     }
   },
+
   // delete user
   async deleteUser({ params }, res) {
     try {
       User.findOneAndDelete({ _id: params.id })
-        .then((dbUserData) => {
-          if (!dbUserData) {
+        .then((dataUser) => {
+          if (!dataUser) {
             return res.status(404).json({ message: user404Message(params.id) });
           }
-          Thought.deleteMany({ username: dbUserData.username }).then(
+          Thought.deleteMany({ username: dataUser.username }).then(
             (deletedData) =>
               deletedData
                 ? res.json({ message: user204Message(params.id) })
