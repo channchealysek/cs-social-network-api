@@ -26,23 +26,34 @@ const thoughtController = {
   // add a thought
   async createThought({ body }, res) {
     try {
-      Thought.create({
+      const dataThought = await Thought.create({
         thoughtText: body.thoughtText,
         username: body.username,
-      })
-        .then(({ _id }) =>
-          User.findOneAndUpdate(
-            { username: body.username },
-            { $push: { thoughts: _id } },
-            { new: true }
-          )
-        )
-        .then((dataThought) => res.status(200).json(dataThought))
-        .catch((err) => res.status(400).json(err));
+      });
+     const dataUser = await User.findOneAndUpdate(
+        { username: body.username },
+        { $push: { thoughts: dataThought._id } },
+        { new: true }
+      );
+      return res.status(200).json(dataThought);
     } catch (err) {
       return res.status(400).json(err);
     }
   },
+
+  // // add a thought
+  // createThought({ body }, res) {
+  //   Thought.create({ thoughtText: body.thoughtText, username: body.username })
+  //     .then(({ _id }) =>
+  //       User.findOneAndUpdate(
+  //         { _id: body.userId },
+  //         { $push: { thoughts: _id } },
+  //         { new: true }
+  //       )
+  //     )
+  //     .then((dbThoughtData) => res.json(dbThoughtData))
+  //     .catch((err) => res.status(400).json(err));
+  // },
   // update thought info
   updateThought({ params, body }, res) {
     Thought.findOneAndUpdate({ _id: params.id }, body, {

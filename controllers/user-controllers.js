@@ -7,7 +7,10 @@ const userController = {
   async getAllUsers(req, res) {
     try {
       const dataUsers = await User.find({})
-        .populate({ path: "thoughts", select: "thoughtText createdAt reactions reactionCount" })
+        .populate({
+          path: "thoughts",
+          select: "thoughtText createdAt reactions reactionCount",
+        })
         .populate({ path: "friends", select: "-__v" })
         .select("-__v");
       return res.status(200).json(dataUsers);
@@ -19,20 +22,17 @@ const userController = {
   // get one user by ID
   async getUserById({ params }, res) {
     try {
-      User.findOne({ _id: params.id })
+      const dataUser = await User.findOne({ _id: params.id })
         .populate({ path: "friends", select: "-__v" })
         .populate({
           path: "thoughts",
           select: "-__v",
           populate: { path: "reactions" },
         })
-        .select("-__v")
-        .then((dataUser) =>
-          dataUser
-            ? res.status(200).json(dataUser)
-            : res.status(404).json({ message: user404Message(params.id) })
-        )
-        .catch((err) => res.status(404).json(err));
+        .select("-__v");
+      return dataUser
+        ? res.status(200).json(dataUser)
+        : res.status(404).json({ message: user404Message(params.id) });
     } catch (err) {
       return res.status(400).json(err);
     }
@@ -54,16 +54,13 @@ const userController = {
   // update user info
   async updateUser({ params, body }, res) {
     try {
-      User.findOneAndUpdate({ _id: params.id }, body, {
+      const dataUser = await User.findOneAndUpdate({ _id: params.id }, body, {
         new: true,
         runValidators: true,
-      })
-        .then((dataUser) =>
-          dataUser
-            ? res.json(dataUser)
-            : res.status(404).json({ message: user404Message(params.id) })
-        )
-        .catch((err) => res.status(400).json(err));
+      });
+      return dataUser
+        ? res.json(dataUser)
+        : res.status(404).json({ message: user404Message(params.id) });
     } catch (err) {
       return res.status(400).json(err);
     }
@@ -72,19 +69,15 @@ const userController = {
   // delete user
   async deleteUser({ params }, res) {
     try {
-      User.findOneAndDelete({ _id: params.id })
-        .then((dataUser) => {
-          if (!dataUser) {
-            return res.status(404).json({ message: user404Message(params.id) });
-          }
-          Thought.deleteMany({ username: dataUser.username }).then(
-            (deletedData) =>
-              deletedData
-                ? res.json({ message: user204Message(params.id) })
-                : res.status(404).json({ message: user404Message(params.id) })
-          );
-        })
-        .catch((err) => res.status(400).json(err));
+      const dataUser = await User.findOneAndDelete({ _id: params.id });
+      if (!dataUser) {
+        return res.status(404).json({ message: user404Message(params.id) });
+      }
+      Thought.deleteMany({ username: dataUser.username }).then((deletedData) =>
+        deletedData
+          ? res.json({ message: user204Message(params.id) })
+          : res.status(404).json({ message: user404Message(params.id) })
+      );
     } catch (err) {
       return res.status(400).json(err);
     }
