@@ -7,7 +7,7 @@ const userController = {
   async getAllUsers(req, res) {
     try {
       const dataUsers = await User.find({})
-        .populate({ path: "thoughts", select: "-__v" })
+        .populate({ path: "thoughts", select: "thoughtText createdAt reactions reactionCount" })
         .populate({ path: "friends", select: "-__v" })
         .select("-__v");
       return res.status(200).json(dataUsers);
