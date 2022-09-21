@@ -30,7 +30,7 @@ const thoughtController = {
         thoughtText: body.thoughtText,
         username: body.username,
       });
-     const dataUser = await User.findOneAndUpdate(
+      await User.findOneAndUpdate(
         { username: body.username },
         { $push: { thoughts: dataThought._id } },
         { new: true }
@@ -41,19 +41,6 @@ const thoughtController = {
     }
   },
 
-  // // add a thought
-  // createThought({ body }, res) {
-  //   Thought.create({ thoughtText: body.thoughtText, username: body.username })
-  //     .then(({ _id }) =>
-  //       User.findOneAndUpdate(
-  //         { _id: body.userId },
-  //         { $push: { thoughts: _id } },
-  //         { new: true }
-  //       )
-  //     )
-  //     .then((dbThoughtData) => res.json(dbThoughtData))
-  //     .catch((err) => res.status(400).json(err));
-  // },
   // update thought info
   updateThought({ params, body }, res) {
     Thought.findOneAndUpdate({ _id: params.id }, body, {
