@@ -54,10 +54,27 @@ const userController = {
   // update user info
   async updateUser({ params, body }, res) {
     try {
+      const oldName = await User.findOne({ _id: params.id }, "username");
+      if (!oldName) {
+        return res
+          .status(404)
+          .json({ message: user404Message(params.id) });
+      }
+      await Thought.updateMany(
+        { username: oldName.username },
+        { username: body.username }
+      );
       const dataUser = await User.findOneAndUpdate({ _id: params.id }, body, {
         new: true,
         runValidators: true,
-      });
+      })
+        .populate({ path: "friends", select: "-__v" })
+        .populate({
+          path: "thoughts",
+          select: "-__v",
+          populate: { path: "reactions" },
+        })
+        .select("-__v");
       return dataUser
         ? res.json(dataUser)
         : res.status(404).json({ message: user404Message(params.id) });
@@ -73,7 +90,7 @@ const userController = {
       if (!dataUser) {
         return res.status(404).json({ message: user404Message(params.id) });
       }
-      Thought.deleteMany({ username: dataUser.username }).then((deletedData) =>
+      await Thought.deleteMany({ username: dataUser.username }).then((deletedData) =>
         deletedData
           ? res.json({ message: user204Message(params.id) })
           : res.status(404).json({ message: user404Message(params.id) })

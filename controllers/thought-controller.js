@@ -1,6 +1,7 @@
 const { Thought, User } = require("../models");
 const thought404Message = (id) => `Thought with ID: ${id} not found!`;
 const thought200Message = (id) => `Thought with ID: ${id} has been deleted!`;
+const user404Message = (user) => `User ${user} do not found! Create one...`;
 
 const thoughtController = {
   // get all thoughts
@@ -14,7 +15,7 @@ const thoughtController = {
       return res.status(500).json(err);
     }
   },
-  
+
   // get one thought by ID
   async getThoughtById({ params }, res) {
     try {
@@ -32,6 +33,13 @@ const thoughtController = {
   // add a thought
   async createThought({ body }, res) {
     try {
+      const dataUser = await User.findOne(
+        { username: body.username },
+        "username"
+      );
+      if (!dataUser) {
+        return res.status(404).json({ message: user404Message(body.username) });
+      }
       const dataThought = await Thought.create({
         thoughtText: body.thoughtText,
         username: body.username,
@@ -70,9 +78,17 @@ const thoughtController = {
   async deleteThought({ params }, res) {
     try {
       const dataThought = await Thought.findOneAndDelete({ _id: params.id });
-      return dataThought
-        ? res.json(thought200Message(dataThought._id))
-        : res.status(404).json({ message: thought404Message(params.id) });
+      if (!dataThought) {
+        return res.status(404).json({ message: thought404Message(params.id) });
+      }
+      await User.updateMany(
+        {},
+        { $pull: { thoughts: params.id } },
+      );
+      return res.json(thought200Message(dataThought._id));
+      // return dataThought
+      //   ? res.json(thought200Message(dataThought._id))
+      //   : res.status(404).json({ message: thought404Message(params.id) });
     } catch (err) {
       return res.status(404).json(err);
     }
