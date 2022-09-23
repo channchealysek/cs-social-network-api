@@ -1,6 +1,6 @@
 const { User, Thought } = require("../models");
 const user404Message = (id) => `User with ID: ${id} not found!`;
-const user204Message = (id) => `User with ID: ${id} has been deleted!`;
+const user204Message = (id) => `Friend with ID: ${id} has been deleted!`;
 
 const userController = {
   // get all users
@@ -56,9 +56,7 @@ const userController = {
     try {
       const oldName = await User.findOne({ _id: params.id }, "username");
       if (!oldName) {
-        return res
-          .status(404)
-          .json({ message: user404Message(params.id) });
+        return res.status(404).json({ message: user404Message(params.id) });
       }
       await Thought.updateMany(
         { username: oldName.username },
@@ -90,13 +88,59 @@ const userController = {
       if (!dataUser) {
         return res.status(404).json({ message: user404Message(params.id) });
       }
-      await Thought.deleteMany({ username: dataUser.username }).then((deletedData) =>
-        deletedData
-          ? res.json({ message: user204Message(params.id) })
-          : res.status(404).json({ message: user404Message(params.id) })
+      await Thought.deleteMany({ username: dataUser.username }).then(
+        (deletedData) =>
+          deletedData
+            ? res.json({ message: user204Message(params.id) })
+            : res.status(404).json({ message: user404Message(params.id) })
       );
     } catch (err) {
       return res.status(400).json(err);
+    }
+  },
+
+  // add a friend to user
+  async addFriend({ params }, res) {
+    try {
+      const getUser = await User.find({ _id: params.userId }, "friends");
+      if (getUser) {
+        console.log(getUser);
+
+        getUser.forEach((friend) => {
+          const getFriendId = String(friend.friends);
+          const FriendId = String(params.friendId);
+
+          if (getFriendId === FriendId) console.log(params.friendId);
+        });
+        return res.status(404).json({
+          message: `ID: ${params.friendId} has already friend with user ID: ${params.userId}.`,
+        });
+      }
+      const dataUser = await User.findOneAndUpdate(
+        { _id: params.userId },
+        { $push: { friends: params.friendId } },
+        { new: true, runValidators: true }
+      );
+      if (!dataUser) {
+        return res.status(404).json({ message: user404Message(params.userId) });
+      }
+      return res.json(dataUser);
+    } catch (err) {
+      return res.status(400).json(err);
+    }
+  },
+  // remove a friend from user
+  async removeFriend({ params }, res) {
+    try {
+      const dataUser = await User.findOneAndUpdate(
+        { _id: params.userId },
+        { $pull: { friends: params.friendId } }
+      );
+      if (dataUser) {
+        return res.status(200).json(user204Message(params.friendId, "User"));
+      }
+    } catch (err) {
+      return res.json(err);
     }
   },
 };

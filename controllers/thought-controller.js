@@ -86,9 +86,6 @@ const thoughtController = {
         { $pull: { thoughts: params.id } },
       );
       return res.json(thought200Message(dataThought._id));
-      // return dataThought
-      //   ? res.json(thought200Message(dataThought._id))
-      //   : res.status(404).json({ message: thought404Message(params.id) });
     } catch (err) {
       return res.status(404).json(err);
     }
