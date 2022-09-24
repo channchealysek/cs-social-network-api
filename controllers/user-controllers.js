@@ -44,10 +44,11 @@ const userController = {
       const dataUser = await User.create({
         username: body.username,
         email: body.email,
-      });
+      }).then(result => {res.json(result)});
       return res.status(200).json(dataUser);
     } catch (err) {
-      return res.status(400).json(err);
+      console.log(body)
+      return res.status(400).json(err.message);
     }
   },
 
