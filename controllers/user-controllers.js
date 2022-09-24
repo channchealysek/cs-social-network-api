@@ -1,6 +1,7 @@
 const { User, Thought } = require("../models");
 const user404Message = (id) => `User with ID: ${id} not found!`;
-const user204Message = (id) => `Friend with ID: ${id} has been deleted!`;
+const user204Message = (id) => `User with ID: ${id} has been deleted!`;
+const user400Message = (name) => `User with ID: ${name} already exist!`;
 
 const userController = {
   // get all users
@@ -41,6 +42,13 @@ const userController = {
   // add a new user
   async createUser({ body }, res) {
     try {
+      const checkUser = await User.findOne(
+        { username: body.username },
+        "username"
+      );
+      if (checkUser) {
+        return res.status(400).json({ message: user400Message(body.username) });
+      }
       const dataUser = await User.create({
         username: body.username,
         email: body.email,
