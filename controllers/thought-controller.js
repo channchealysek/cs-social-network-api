@@ -2,6 +2,8 @@ const { Thought, User } = require("../models");
 const thought404Message = (id) => `Thought with ID: ${id} not found!`;
 const thought200Message = (id) => `Thought with ID: ${id} has been deleted!`;
 const user404Message = (user) => `User ${user} do not found! Create one...`;
+const reaction404Message = (id) => `Reaction with reactionId: ${id} not found!`;
+const reaction200Message = (id) => `Reaction with reactionId: ${id} has been removed!`;
 
 const thoughtController = {
   // get all thoughts
@@ -81,11 +83,45 @@ const thoughtController = {
       if (!dataThought) {
         return res.status(404).json({ message: thought404Message(params.id) });
       }
-      await User.updateMany(
-        {},
-        { $pull: { thoughts: params.id } },
-      );
+      await User.updateMany({}, { $pull: { thoughts: params.id } });
       return res.json(thought200Message(dataThought._id));
+    } catch (err) {
+      return res.status(404).json(err);
+    }
+  },
+  // add a reaction to thought
+  async createReaction({ params, body }, res) {
+    try {
+      const dataThought = await Thought.findOneAndUpdate(
+        { _id: params.thoughtId },
+        {
+          $addToSet: {
+            reactions: {
+              reactionBody: body.reactionBody,
+              username: body.username,
+            },
+          },
+        },
+        { new: true, runValidators: true }
+      );
+      return dataThought
+        ? res.json(dataThought)
+        : res.status(404).json({ message: thought404Message(params.id) });
+    } catch (err) {
+      res.status(400).json(err);
+    }
+  },
+
+  // remove a reaction from thought
+  async removeReaction({ params }, res) {
+    try {
+      const dataThought = await Thought.findOneAndUpdate(
+        { _id: params.thoughtId },
+        { $pull: { reactions: { _id: params.reactionId } } }
+      );
+      return dataThought
+        ? res.json(reaction200Message(params.reactionId))
+        : res.status(404).json({ message: reaction404Message(params.reactionId) });
     } catch (err) {
       return res.status(404).json(err);
     }
