@@ -104,7 +104,7 @@ const userController = {
     try {
       const dataUser = await User.findOneAndUpdate(
         { _id: params.userId },
-        { $push: { friends: params.friendId } },
+        { $addToSet: { friends: params.friendId } },
         { new: true, runValidators: true }
       );
       return res.json(dataUser);
