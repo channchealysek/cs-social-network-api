@@ -35,7 +35,7 @@ Initialize the app by typing in the root of the project folder ```npm start```.
 ![cocial-network-api](https://user-images.githubusercontent.com/102747948/192118226-bde0b2b1-5876-4be4-bcd5-0e11576ebaa2.png)
 
 ## VideoDemo
-https://cs-tech-blog.herokuapp.com/
+https://tinyurl.com/hn7pk4bf
 
 ## Questions
 - For any questions regarding this project, you can reach me via my personal e-mail: ``` sek.channchealy@yahoo.com ``` .
