@@ -102,28 +102,11 @@ const userController = {
   // add a friend to user
   async addFriend({ params }, res) {
     try {
-      const getUser = await User.find({ _id: params.userId }, "friends");
-      if (getUser) {
-        console.log(getUser);
-
-        getUser.forEach((friend) => {
-          const getFriendId = String(friend.friends);
-          const FriendId = String(params.friendId);
-
-          if (getFriendId === FriendId) console.log(params.friendId);
-        });
-        return res.status(404).json({
-          message: `ID: ${params.friendId} has already friend with user ID: ${params.userId}.`,
-        });
-      }
       const dataUser = await User.findOneAndUpdate(
         { _id: params.userId },
         { $push: { friends: params.friendId } },
         { new: true, runValidators: true }
       );
-      if (!dataUser) {
-        return res.status(404).json({ message: user404Message(params.userId) });
-      }
       return res.json(dataUser);
     } catch (err) {
       return res.status(400).json(err);
